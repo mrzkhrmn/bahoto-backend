@@ -15,4 +15,5 @@ public class OilChange : BaseEntity
     public string? PolenFilter { get; set; }
     public string? Note { get; set; }
     public string? Employee { get; set; }
+    public decimal? Price { get; set; }
 }

@@ -14,6 +14,7 @@ public class OilChangeDto
     public string? PolenFilter { get; set; }
     public string? Note { get; set; }
     public string? Employee { get; set; }
+    public decimal? Price { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
@@ -31,6 +32,7 @@ public class CreateOilChangeRequest
     public string? PolenFilter { get; set; }
     public string? Note { get; set; }
     public string? Employee { get; set; }
+    public decimal? Price { get; set; }
 }
 
 public class UpdateOilChangeRequest
@@ -47,6 +49,7 @@ public class UpdateOilChangeRequest
     public string? PolenFilter { get; set; }
     public string? Note { get; set; }
     public string? Employee { get; set; }
+    public decimal? Price { get; set; }
 }
 
 public class GetOilChangeRequest

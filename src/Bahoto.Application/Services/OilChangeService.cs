@@ -61,6 +61,11 @@ public class OilChangeService : IOilChangeService
             return ApiResponse<OilChangeDto>.Fail("KmChanged geçerli bir değer olmalıdır.");
         }
 
+        if (request.Price < 0)
+        {
+            return ApiResponse<OilChangeDto>.Fail("Price geçerli bir değer olmalıdır.");
+        }
+
         var entity = new OilChange
         {
             Vehicle = request.Vehicle,
@@ -73,7 +78,8 @@ public class OilChangeService : IOilChangeService
             FuelFilter = request.FuelFilter,
             PolenFilter = request.PolenFilter,
             Note = request.Note,
-            Employee = request.Employee
+            Employee = request.Employee,
+            Price = request.Price
         };
 
         _db.OilChanges.Add(entity);
@@ -100,6 +106,11 @@ public class OilChangeService : IOilChangeService
             return ApiResponse<OilChangeDto>.Fail("Km değerleri geçerli olmalıdır.");
         }
 
+        if (request.Price < 0)
+        {
+            return ApiResponse<OilChangeDto>.Fail("Price geçerli bir değer olmalıdır.");
+        }
+
         entity.Vehicle = request.Vehicle;
         entity.Plate = request.Plate;
         entity.OilType = request.OilType.Trim();
@@ -111,6 +122,7 @@ public class OilChangeService : IOilChangeService
         entity.PolenFilter = request.PolenFilter;
         entity.Note = request.Note;
         entity.Employee = request.Employee;
+        entity.Price = request.Price;
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -147,6 +159,7 @@ public class OilChangeService : IOilChangeService
         PolenFilter = entity.PolenFilter,
         Note = entity.Note,
         Employee = entity.Employee,
+        Price = entity.Price,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };

@@ -42,6 +42,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.PolenFilter).HasMaxLength(200);
             entity.Property(x => x.Note).HasMaxLength(2000);
             entity.Property(x => x.Employee).HasMaxLength(200);
+            entity.Property(x => x.Price).HasPrecision(18, 2);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
     }
