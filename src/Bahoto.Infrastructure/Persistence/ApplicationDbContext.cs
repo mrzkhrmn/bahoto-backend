@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<OilChange> OilChanges => Set<OilChange>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,6 +44,21 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.Note).HasMaxLength(2000);
             entity.Property(x => x.Employee).HasMaxLength(200);
             entity.Property(x => x.Price).HasPrecision(18, 2);
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("RefreshTokens");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.TokenHash).HasMaxLength(128).IsRequired();
+            entity.Property(x => x.ReplacedByTokenHash).HasMaxLength(128);
+            entity.HasIndex(x => x.TokenHash).IsUnique();
+            entity.HasIndex(x => x.UserId);
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
     }

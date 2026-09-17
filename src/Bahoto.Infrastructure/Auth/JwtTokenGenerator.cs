@@ -18,6 +18,11 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _settings = settings.Value;
     }
 
+    public int AccessTokenExpirationMinutes => _settings.ExpirationMinutes;
+
+    public int GetRefreshTokenExpirationDays(bool rememberMe) =>
+        rememberMe ? _settings.RefreshTokenRememberDays : _settings.RefreshTokenDays;
+
     public string GenerateToken(User user)
     {
         var claims = new List<Claim>
