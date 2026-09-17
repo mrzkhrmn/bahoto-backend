@@ -5,6 +5,7 @@ public class OilChangeDto
     public Guid Id { get; set; }
     public string? Vehicle { get; set; }
     public string? Plate { get; set; }
+    public string? Phone { get; set; }
     public string OilType { get; set; } = string.Empty;
     public int KmChanged { get; set; }
     public int NextChangeKm { get; set; }
@@ -23,6 +24,7 @@ public class CreateOilChangeRequest
 {
     public string? Vehicle { get; set; }
     public string? Plate { get; set; }
+    public string? Phone { get; set; }
     public string OilType { get; set; } = string.Empty;
     public int KmChanged { get; set; }
     public int? NextChangeKm { get; set; }
@@ -40,6 +42,7 @@ public class UpdateOilChangeRequest
     public Guid Id { get; set; }
     public string? Vehicle { get; set; }
     public string? Plate { get; set; }
+    public string? Phone { get; set; }
     public string OilType { get; set; } = string.Empty;
     public int KmChanged { get; set; }
     public int NextChangeKm { get; set; }

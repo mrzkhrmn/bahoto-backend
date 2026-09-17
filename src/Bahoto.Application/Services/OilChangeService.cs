@@ -70,6 +70,7 @@ public class OilChangeService : IOilChangeService
         {
             Vehicle = request.Vehicle,
             Plate = request.Plate,
+            Phone = request.Phone,
             OilType = request.OilType.Trim(),
             KmChanged = request.KmChanged,
             NextChangeKm = request.NextChangeKm ?? request.KmChanged + 10000,
@@ -113,6 +114,7 @@ public class OilChangeService : IOilChangeService
 
         entity.Vehicle = request.Vehicle;
         entity.Plate = request.Plate;
+        entity.Phone = request.Phone;
         entity.OilType = request.OilType.Trim();
         entity.KmChanged = request.KmChanged;
         entity.NextChangeKm = request.NextChangeKm;
@@ -150,6 +152,7 @@ public class OilChangeService : IOilChangeService
         Id = entity.Id,
         Vehicle = entity.Vehicle,
         Plate = entity.Plate,
+        Phone = entity.Phone,
         OilType = entity.OilType,
         KmChanged = entity.KmChanged,
         NextChangeKm = entity.NextChangeKm,
