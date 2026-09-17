@@ -36,6 +36,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Vehicle).HasMaxLength(200);
             entity.Property(x => x.Plate).HasMaxLength(20);
+            entity.Property(x => x.Phone).HasMaxLength(30);
             entity.Property(x => x.OilType).HasMaxLength(100).IsRequired();
             entity.Property(x => x.OilFilter).HasMaxLength(200);
             entity.Property(x => x.AirFilter).HasMaxLength(200);
