@@ -13,6 +13,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<OilChange> OilChanges => Set<OilChange>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Cari> Caris => Set<Cari>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,6 +47,30 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.Note).HasMaxLength(2000);
             entity.Property(x => x.Employee).HasMaxLength(200);
             entity.Property(x => x.Price).HasPrecision(18, 2);
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToTable("Products");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<Cari>(entity =>
+        {
+            entity.ToTable("Caris");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.IncomingAmount).HasPrecision(18, 2);
+            entity.Property(x => x.PaidAmount).HasPrecision(18, 2);
+            entity.Property(x => x.Balance).HasPrecision(18, 2);
+            entity.HasIndex(x => x.ProductId);
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
 
