@@ -6,9 +6,10 @@ namespace Bahoto.Application.Interfaces;
 
 public interface ICariService
 {
-    Task<ApiResponse<PagedResult<CariDto>>> ListAsync(ListCariRequest request, CancellationToken cancellationToken = default);
+    Task<ApiResponse<PagedResult<CariProductGroupDto>>> ListAsync(ListCariRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse<CariDto>> GetAsync(GetCariRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse<CariDto>> CreateAsync(CreateCariRequest request, CancellationToken cancellationToken = default);
+    Task<ApiResponse<CariProductGroupDto>> CreateWithProductAsync(CreateCariWithProductRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse<CariDto>> UpdateAsync(UpdateCariRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse> DeleteAsync(DeleteCariRequest request, CancellationToken cancellationToken = default);
 }

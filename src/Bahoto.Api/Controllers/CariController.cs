@@ -38,6 +38,13 @@ public class CariController : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
+    [HttpPost("create-with-product")]
+    public async Task<IActionResult> CreateWithProduct([FromBody] CreateCariWithProductRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _cariService.CreateWithProductAsync(request, cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
     [HttpPost("update")]
     public async Task<IActionResult> Update([FromBody] UpdateCariRequest request, CancellationToken cancellationToken)
     {
