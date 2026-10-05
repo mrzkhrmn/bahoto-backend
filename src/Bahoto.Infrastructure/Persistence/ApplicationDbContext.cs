@@ -56,6 +56,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.HasIndex(x => new { x.Brand, x.Name })
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
 
@@ -63,6 +66,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             entity.ToTable("Caris");
             entity.HasKey(x => x.Id);
+            entity.Property(x => x.QuantityUnit).HasMaxLength(20).IsRequired();
             entity.Property(x => x.IncomingAmount).HasPrecision(18, 2);
             entity.Property(x => x.PaidAmount).HasPrecision(18, 2);
             entity.Property(x => x.Balance).HasPrecision(18, 2);
