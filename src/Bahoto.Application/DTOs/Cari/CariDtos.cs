@@ -40,10 +40,10 @@ public class CreateCariWithProductRequest
 {
     public string Brand { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public string QuantityUnit { get; set; } = "Adet";
-    public decimal IncomingAmount { get; set; }
-    public decimal PaidAmount { get; set; }
+    public int? Quantity { get; set; }
+    public string? QuantityUnit { get; set; }
+    public decimal? IncomingAmount { get; set; }
+    public decimal? PaidAmount { get; set; }
 }
 
 public class UpdateCariRequest

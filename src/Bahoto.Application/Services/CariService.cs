@@ -27,12 +27,12 @@ public class CariService : ICariService
         var page = request.Page < 1 ? 1 : request.Page;
         var pageSize = request.PageSize < 1 ? 20 : Math.Min(request.PageSize, 1000);
 
-        var query = _db.Caris.AsNoTracking().AsQueryable();
+        var cariQuery = _db.Caris.AsNoTracking().AsQueryable();
 
         if (request.StartDate is DateOnly startDate)
         {
             var startUtc = DateTime.SpecifyKind(startDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
-            query = query.Where(c => c.CreatedAt >= startUtc);
+            cariQuery = cariQuery.Where(c => c.CreatedAt >= startUtc);
         }
 
         if (request.EndDate is DateOnly endDate)
@@ -40,18 +40,34 @@ public class CariService : ICariService
             var endExclusiveUtc = DateTime.SpecifyKind(
                 endDate.AddDays(1).ToDateTime(TimeOnly.MinValue),
                 DateTimeKind.Utc);
-            query = query.Where(c => c.CreatedAt < endExclusiveUtc);
+            cariQuery = cariQuery.Where(c => c.CreatedAt < endExclusiveUtc);
         }
 
-        var productSummaries = query
-            .GroupBy(c => c.ProductId)
-            .Select(g => new
-            {
-                ProductId = g.Key,
-                LastAt = g.Max(x => x.CreatedAt),
-                IncomingAmount = g.Sum(x => x.IncomingAmount),
-                PaidAmount = g.Sum(x => x.PaidAmount)
-            });
+        var productsWithAnyCari = _db.Caris.AsNoTracking().Select(c => c.ProductId).Distinct();
+        var productsWithCariInRange = cariQuery.Select(c => c.ProductId).Distinct();
+
+        // Cari hareketi olan ürünler + henüz hareketi olmayan ürünler
+        // (yalnızca marka ile oluşturulan kayıtların listede görünmesi için).
+        var productsQuery = _db.Products.AsNoTracking().Where(p =>
+            productsWithCariInRange.Contains(p.Id) ||
+            !productsWithAnyCari.Contains(p.Id));
+
+        var productSummaries = productsQuery.Select(p => new
+        {
+            ProductId = p.Id,
+            Brand = p.Brand,
+            Name = p.Name,
+            LastAt = cariQuery
+                .Where(c => c.ProductId == p.Id)
+                .Select(c => (DateTime?)c.CreatedAt)
+                .Max() ?? p.CreatedAt,
+            IncomingAmount = cariQuery
+                .Where(c => c.ProductId == p.Id)
+                .Sum(c => (decimal?)c.IncomingAmount) ?? 0m,
+            PaidAmount = cariQuery
+                .Where(c => c.ProductId == p.Id)
+                .Sum(c => (decimal?)c.PaidAmount) ?? 0m
+        });
 
         var totalCount = await productSummaries.CountAsync(cancellationToken);
 
@@ -63,31 +79,9 @@ public class CariService : ICariService
 
         var productIds = pageItems.Select(x => x.ProductId).ToList();
 
-        var products = await _db.Products
-            .AsNoTracking()
-            .Where(p => productIds.Contains(p.Id))
-            .ToDictionaryAsync(p => p.Id, cancellationToken);
-
-        var entriesQuery = _db.Caris
-            .AsNoTracking()
+        var entries = await cariQuery
             .Include(x => x.Product)
-            .Where(c => productIds.Contains(c.ProductId));
-
-        if (request.StartDate is DateOnly entryStart)
-        {
-            var startUtc = DateTime.SpecifyKind(entryStart.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
-            entriesQuery = entriesQuery.Where(c => c.CreatedAt >= startUtc);
-        }
-
-        if (request.EndDate is DateOnly entryEnd)
-        {
-            var endExclusiveUtc = DateTime.SpecifyKind(
-                entryEnd.AddDays(1).ToDateTime(TimeOnly.MinValue),
-                DateTimeKind.Utc);
-            entriesQuery = entriesQuery.Where(c => c.CreatedAt < endExclusiveUtc);
-        }
-
-        var entries = await entriesQuery
+            .Where(c => productIds.Contains(c.ProductId))
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
 
@@ -96,16 +90,14 @@ public class CariService : ICariService
             .ToDictionary(g => g.Key, g => g.Select(Map).ToList());
 
         var items = pageItems
-            .Where(x => products.ContainsKey(x.ProductId))
             .Select(x =>
             {
-                var product = products[x.ProductId];
                 var groupEntries = entriesByProduct.GetValueOrDefault(x.ProductId) ?? [];
                 return new CariProductGroupDto
                 {
                     ProductId = x.ProductId,
-                    Brand = product.Brand,
-                    Name = product.Name,
+                    Brand = x.Brand,
+                    Name = x.Name,
                     QuantityLabel = FormatQuantityLabel(groupEntries),
                     IncomingAmount = x.IncomingAmount,
                     PaidAmount = x.PaidAmount,
@@ -183,15 +175,29 @@ public class CariService : ICariService
             return ApiResponse<CariProductGroupDto>.Fail("Marka zorunludur.");
         }
 
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return ApiResponse<CariProductGroupDto>.Fail("Ürün adı zorunludur.");
-        }
+        var hasEntry = request.Quantity.HasValue
+            || request.IncomingAmount.HasValue
+            || request.PaidAmount.HasValue;
 
-        var validationError = ValidateRequest(request.Quantity, request.QuantityUnit, request.IncomingAmount, request.PaidAmount);
-        if (validationError is not null)
+        if (hasEntry)
         {
-            return ApiResponse<CariProductGroupDto>.Fail(validationError);
+            if (!request.Quantity.HasValue
+                || !request.IncomingAmount.HasValue
+                || !request.PaidAmount.HasValue)
+            {
+                return ApiResponse<CariProductGroupDto>.Fail(
+                    "Hareket eklemek için miktar, gelen fiyat ve ödenen fiyat alanlarının hepsini doldurun.");
+            }
+
+            var validationError = ValidateRequest(
+                request.Quantity.Value,
+                request.QuantityUnit,
+                request.IncomingAmount.Value,
+                request.PaidAmount.Value);
+            if (validationError is not null)
+            {
+                return ApiResponse<CariProductGroupDto>.Fail(validationError);
+            }
         }
 
         var brandLower = brand.ToLowerInvariant();
@@ -203,42 +209,60 @@ public class CariService : ICariService
         if (exists)
         {
             return ApiResponse<CariProductGroupDto>.Fail(
-                "Bu marka ve ürün adı zaten kayıtlı. Aynı ürüne ekleme için listedeki satırı açın.");
+                string.IsNullOrEmpty(name)
+                    ? "Bu marka için ürün adı boş bir kayıt zaten var. Listedeki satırı açın veya ürün adı girin."
+                    : "Bu marka ve ürün adı zaten kayıtlı. Aynı ürüne ekleme için listedeki satırı açın.");
         }
 
-        var unit = NormalizeUnit(request.QuantityUnit);
         var product = new Product
         {
             Brand = brand,
             Name = name
         };
 
-        var cari = new Cari
-        {
-            Product = product,
-            Quantity = request.Quantity,
-            QuantityUnit = unit,
-            IncomingAmount = request.IncomingAmount,
-            PaidAmount = request.PaidAmount,
-            Balance = request.IncomingAmount - request.PaidAmount
-        };
-
         _db.Products.Add(product);
-        _db.Caris.Add(cari);
-        await _db.SaveChangesAsync(cancellationToken);
 
-        var mapped = Map(cari);
+        List<CariDto> entries = [];
+        decimal incomingAmount = 0;
+        decimal paidAmount = 0;
+
+        if (hasEntry)
+        {
+            var unit = NormalizeUnit(request.QuantityUnit);
+            var cari = new Cari
+            {
+                Product = product,
+                Quantity = request.Quantity!.Value,
+                QuantityUnit = unit,
+                IncomingAmount = request.IncomingAmount!.Value,
+                PaidAmount = request.PaidAmount!.Value,
+                Balance = request.IncomingAmount.Value - request.PaidAmount.Value
+            };
+
+            _db.Caris.Add(cari);
+            await _db.SaveChangesAsync(cancellationToken);
+
+            var mapped = Map(cari);
+            entries = [mapped];
+            incomingAmount = cari.IncomingAmount;
+            paidAmount = cari.PaidAmount;
+        }
+        else
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
         return ApiResponse<CariProductGroupDto>.Ok(new CariProductGroupDto
         {
             ProductId = product.Id,
             Brand = product.Brand,
             Name = product.Name,
-            QuantityLabel = FormatQuantityLabel([mapped]),
-            IncomingAmount = cari.IncomingAmount,
-            PaidAmount = cari.PaidAmount,
-            Balance = cari.Balance,
-            Entries = [mapped]
-        }, "Cari kaydı oluşturuldu.");
+            QuantityLabel = FormatQuantityLabel(entries),
+            IncomingAmount = incomingAmount,
+            PaidAmount = paidAmount,
+            Balance = incomingAmount - paidAmount,
+            Entries = entries
+        }, hasEntry ? "Cari kaydı oluşturuldu." : "Ürün oluşturuldu.");
     }
 
     public async Task<ApiResponse<CariDto>> UpdateAsync(UpdateCariRequest request, CancellationToken cancellationToken = default)
@@ -307,12 +331,12 @@ public class CariService : ICariService
 
         if (incomingAmount < 0)
         {
-            return "Gelen miktar geçerli bir değer olmalıdır.";
+            return "Gelen fiyat geçerli bir değer olmalıdır.";
         }
 
         if (paidAmount < 0)
         {
-            return "Ödenen miktar geçerli bir değer olmalıdır.";
+            return "Ödenen fiyat geçerli bir değer olmalıdır.";
         }
 
         return null;

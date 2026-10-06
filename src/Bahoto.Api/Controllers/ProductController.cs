@@ -51,4 +51,18 @@ public class ProductController : ControllerBase
         var result = await _productService.DeleteAsync(request, cancellationToken);
         return result.Success ? Ok(result) : NotFound(result);
     }
+
+    [HttpPost("delete-brand")]
+    public async Task<IActionResult> DeleteBrand([FromBody] DeleteBrandRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _productService.DeleteBrandAsync(request, cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("reorder-brands")]
+    public async Task<IActionResult> ReorderBrands([FromBody] ReorderBrandsRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _productService.ReorderBrandsAsync(request, cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }

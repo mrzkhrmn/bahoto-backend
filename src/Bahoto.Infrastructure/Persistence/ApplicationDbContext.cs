@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<OilChange> OilChanges => Set<OilChange>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<BrandOrder> BrandOrders => Set<BrandOrder>();
     public DbSet<Cari> Caris => Set<Cari>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -56,9 +57,22 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Price).HasPrecision(18, 2);
             entity.HasIndex(x => new { x.Brand, x.Name })
                 .IsUnique()
                 .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<BrandOrder>(entity =>
+        {
+            entity.ToTable("BrandOrders");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
+            entity.HasIndex(x => x.Brand)
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasIndex(x => x.SortOrder);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
 
