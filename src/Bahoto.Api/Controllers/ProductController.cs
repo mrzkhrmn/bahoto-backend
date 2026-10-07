@@ -65,4 +65,11 @@ public class ProductController : ControllerBase
         var result = await _productService.ReorderBrandsAsync(request, cancellationToken);
         return result.Success ? Ok(result) : BadRequest(result);
     }
+
+    [HttpPost("apply-price-increase")]
+    public async Task<IActionResult> ApplyPriceIncrease([FromBody] ApplyPriceIncreaseRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _productService.ApplyPriceIncreaseAsync(request, cancellationToken);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }

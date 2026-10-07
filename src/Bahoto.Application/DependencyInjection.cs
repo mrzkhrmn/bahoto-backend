@@ -12,6 +12,8 @@ public static class DependencyInjection
         services.AddScoped<IOilChangeService, OilChangeService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICariService, CariService>();
+        services.AddScoped<IWashPriceService, WashPriceService>();
+        services.AddScoped<IDryLubePriceService, DryLubePriceService>();
         return services;
     }
 }

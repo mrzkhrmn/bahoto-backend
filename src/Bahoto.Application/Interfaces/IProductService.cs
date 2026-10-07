@@ -13,4 +13,5 @@ public interface IProductService
     Task<ApiResponse> DeleteAsync(DeleteProductRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse> DeleteBrandAsync(DeleteBrandRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse> ReorderBrandsAsync(ReorderBrandsRequest request, CancellationToken cancellationToken = default);
+    Task<ApiResponse<ApplyPriceIncreaseResultDto>> ApplyPriceIncreaseAsync(ApplyPriceIncreaseRequest request, CancellationToken cancellationToken = default);
 }
