@@ -285,6 +285,100 @@ public class ProductService : IProductService
         return ApiResponse.Ok("Marka ve ürünleri silindi.");
     }
 
+    public async Task<ApiResponse<ApplyPriceIncreaseResultDto>> ApplyPriceIncreaseAsync(
+        ApplyPriceIncreaseRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.Percent == 0)
+        {
+            return ApiResponse<ApplyPriceIncreaseResultDto>.Fail("Zam oranı 0 olamaz.");
+        }
+
+        var scope = (request.Scope ?? "all").Trim().ToLowerInvariant();
+        IQueryable<Product> query = _db.Products;
+
+        switch (scope)
+        {
+            case "all":
+                break;
+            case "brand":
+                if (string.IsNullOrWhiteSpace(request.Brand))
+                {
+                    return ApiResponse<ApplyPriceIncreaseResultDto>.Fail("Marka zorunludur.");
+                }
+
+                var brand = request.Brand.Trim();
+                query = query.Where(x => x.Brand.ToLower() == brand.ToLower());
+                break;
+            case "product":
+                if (request.ProductId is null || request.ProductId == Guid.Empty)
+                {
+                    return ApiResponse<ApplyPriceIncreaseResultDto>.Fail("Ürün seçilmelidir.");
+                }
+
+                query = query.Where(x => x.Id == request.ProductId);
+                break;
+            default:
+                return ApiResponse<ApplyPriceIncreaseResultDto>.Fail("Geçersiz zam kapsamı.");
+        }
+
+        var products = await query.ToListAsync(cancellationToken);
+        if (products.Count == 0)
+        {
+            return ApiResponse<ApplyPriceIncreaseResultDto>.Fail(
+                scope == "product" ? "Ürün bulunamadı." :
+                scope == "brand" ? "Markaya ait ürün bulunamadı." :
+                "Güncellenecek ürün bulunamadı.");
+        }
+
+        var factor = 1 + (request.Percent / 100m);
+        var utcNow = DateTime.UtcNow;
+        var updated = 0;
+        var skipped = 0;
+
+        foreach (var product in products)
+        {
+            if (product.Price is null)
+            {
+                skipped++;
+                continue;
+            }
+
+            var next = Math.Round(product.Price.Value * factor, 2, MidpointRounding.AwayFromZero);
+            if (next < 0)
+            {
+                next = 0;
+            }
+
+            if (next == product.Price.Value)
+            {
+                skipped++;
+                continue;
+            }
+
+            product.Price = next;
+            product.LastPriceDate = utcNow;
+            product.UpdatedAt = utcNow;
+            updated++;
+        }
+
+        if (updated == 0)
+        {
+            return ApiResponse<ApplyPriceIncreaseResultDto>.Fail(
+                "Fiyatı güncellenecek ürün bulunamadı. Fiyatı olmayan ürünler atlanır.");
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return ApiResponse<ApplyPriceIncreaseResultDto>.Ok(
+            new ApplyPriceIncreaseResultDto
+            {
+                UpdatedCount = updated,
+                SkippedCount = skipped
+            },
+            $"{updated} ürünün fiyatı güncellendi.");
+    }
+
     public async Task<ApiResponse> ReorderBrandsAsync(ReorderBrandsRequest request, CancellationToken cancellationToken = default)
     {
         var brands = request.Brands

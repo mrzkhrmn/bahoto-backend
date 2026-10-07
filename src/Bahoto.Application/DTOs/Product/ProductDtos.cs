@@ -59,3 +59,19 @@ public class ListProductRequest
     public int PageSize { get; set; } = 20;
     public string? Search { get; set; }
 }
+
+public class ApplyPriceIncreaseRequest
+{
+    /// <summary>all | brand | product</summary>
+    public string Scope { get; set; } = "all";
+    public string? Brand { get; set; }
+    public Guid? ProductId { get; set; }
+    /// <summary>Yüzde zam; örn. 10 = %10 artış. Negatif değer indirim uygular.</summary>
+    public decimal Percent { get; set; }
+}
+
+public class ApplyPriceIncreaseResultDto
+{
+    public int UpdatedCount { get; set; }
+    public int SkippedCount { get; set; }
+}

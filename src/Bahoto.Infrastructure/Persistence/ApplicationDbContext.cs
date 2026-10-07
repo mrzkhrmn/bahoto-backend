@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Product> Products => Set<Product>();
     public DbSet<BrandOrder> BrandOrders => Set<BrandOrder>();
     public DbSet<Cari> Caris => Set<Cari>();
+    public DbSet<WashPrice> WashPrices => Set<WashPrice>();
+    public DbSet<DryLubePrice> DryLubePrices => Set<DryLubePrice>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -89,6 +91,52 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 .WithMany()
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<WashPrice>(entity =>
+        {
+            entity.ToTable("WashPrices");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.BrandModel).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.CardInteriorExterior).HasPrecision(18, 2);
+            entity.Property(x => x.CashInteriorExterior).HasPrecision(18, 2);
+            entity.Property(x => x.CardExterior).HasPrecision(18, 2);
+            entity.Property(x => x.CashExterior).HasPrecision(18, 2);
+            entity.Property(x => x.CardUnderWash).HasPrecision(18, 2);
+            entity.Property(x => x.CashUnderWash).HasPrecision(18, 2);
+            entity.Property(x => x.CardUnderEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CashUnderEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CardUnderOverEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CashUnderOverEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CardOverEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CashOverEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CardUnderWashEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CashUnderWashEngine).HasPrecision(18, 2);
+            entity.Property(x => x.CardFullWash).HasPrecision(18, 2);
+            entity.Property(x => x.CashFullWash).HasPrecision(18, 2);
+            entity.HasIndex(x => x.BrandModel)
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasIndex(x => x.SortOrder);
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<DryLubePrice>(entity =>
+        {
+            entity.ToTable("DryLubePrices");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.BrandModel).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.CardNormal).HasPrecision(18, 2);
+            entity.Property(x => x.CashNormal).HasPrecision(18, 2);
+            entity.Property(x => x.CardWaterless).HasPrecision(18, 2);
+            entity.Property(x => x.CashWaterless).HasPrecision(18, 2);
+            entity.Property(x => x.CardUnderWashDryLube).HasPrecision(18, 2);
+            entity.Property(x => x.CashUnderWashDryLube).HasPrecision(18, 2);
+            entity.HasIndex(x => x.BrandModel)
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasIndex(x => x.SortOrder);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
 
