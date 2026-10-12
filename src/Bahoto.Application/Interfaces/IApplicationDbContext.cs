@@ -12,6 +12,7 @@ public interface IApplicationDbContext
     DbSet<Cari> Caris { get; }
     DbSet<WashPrice> WashPrices { get; }
     DbSet<DryLubePrice> DryLubePrices { get; }
+    DbSet<VehicleMaintenance> VehicleMaintenances { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

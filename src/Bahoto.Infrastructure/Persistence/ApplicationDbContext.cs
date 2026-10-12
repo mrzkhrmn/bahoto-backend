@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Cari> Caris => Set<Cari>();
     public DbSet<WashPrice> WashPrices => Set<WashPrice>();
     public DbSet<DryLubePrice> DryLubePrices => Set<DryLubePrice>();
+    public DbSet<VehicleMaintenance> VehicleMaintenances => Set<VehicleMaintenance>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -133,6 +134,22 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.CashWaterless).HasPrecision(18, 2);
             entity.Property(x => x.CardUnderWashDryLube).HasPrecision(18, 2);
             entity.Property(x => x.CashUnderWashDryLube).HasPrecision(18, 2);
+            entity.HasIndex(x => x.BrandModel)
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasIndex(x => x.SortOrder);
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<VehicleMaintenance>(entity =>
+        {
+            entity.ToTable("VehicleMaintenances");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.BrandModel).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.EngineOil).HasMaxLength(200);
+            entity.Property(x => x.AirFilter).HasMaxLength(200);
+            entity.Property(x => x.OilFilter).HasMaxLength(200);
+            entity.Property(x => x.PolenFilter).HasMaxLength(200);
             entity.HasIndex(x => x.BrandModel)
                 .IsUnique()
                 .HasFilter("\"DeletedAt\" IS NULL");
