@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<ICariService, CariService>();
         services.AddScoped<IWashPriceService, WashPriceService>();
         services.AddScoped<IDryLubePriceService, DryLubePriceService>();
+        services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
         return services;
     }
 }
