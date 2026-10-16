@@ -16,6 +16,8 @@ public class OilChangeDto
     public string? Note { get; set; }
     public string? Employee { get; set; }
     public decimal? Price { get; set; }
+    public string? PaymentMethod { get; set; }
+    public string? BankAccount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }
@@ -35,6 +37,8 @@ public class CreateOilChangeRequest
     public string? Note { get; set; }
     public string? Employee { get; set; }
     public decimal? Price { get; set; }
+    public string? PaymentMethod { get; set; }
+    public string? BankAccount { get; set; }
 }
 
 public class UpdateOilChangeRequest
@@ -53,6 +57,8 @@ public class UpdateOilChangeRequest
     public string? Note { get; set; }
     public string? Employee { get; set; }
     public decimal? Price { get; set; }
+    public string? PaymentMethod { get; set; }
+    public string? BankAccount { get; set; }
 }
 
 public class GetOilChangeRequest

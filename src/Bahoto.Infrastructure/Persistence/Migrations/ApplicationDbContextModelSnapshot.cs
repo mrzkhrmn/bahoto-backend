@@ -66,6 +66,9 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<Guid>("CariItemId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -80,9 +83,6 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -96,9 +96,43 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("CariItemId");
 
                     b.ToTable("Caris", (string)null);
+                });
+
+            modelBuilder.Entity("Bahoto.Domain.Entities.CariItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Brand", "Name")
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
+
+                    b.ToTable("CariItems", (string)null);
                 });
 
             modelBuilder.Entity("Bahoto.Domain.Entities.DryLubePrice", b =>
@@ -162,6 +196,47 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
                     b.ToTable("DryLubePrices", (string)null);
                 });
 
+            modelBuilder.Entity("Bahoto.Domain.Entities.KarmaProduct", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastPriceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal?>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Brand", "Name")
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
+
+                    b.ToTable("KarmaProducts", (string)null);
+                });
+
             modelBuilder.Entity("Bahoto.Domain.Entities.OilChange", b =>
                 {
                     b.Property<Guid>("Id")
@@ -169,6 +244,10 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("AirFilter")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("BankAccount")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
@@ -204,6 +283,10 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
@@ -510,13 +593,13 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Bahoto.Domain.Entities.Cari", b =>
                 {
-                    b.HasOne("Bahoto.Domain.Entities.Product", "Product")
+                    b.HasOne("Bahoto.Domain.Entities.CariItem", "CariItem")
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("CariItemId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("CariItem");
                 });
 
             modelBuilder.Entity("Bahoto.Domain.Entities.RefreshToken", b =>

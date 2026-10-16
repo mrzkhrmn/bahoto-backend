@@ -2,6 +2,16 @@ namespace Bahoto.Application.Common;
 
 public static class ServicePriceIncreaseHelper
 {
+    public static decimal RoundUpToNearest50(decimal value)
+    {
+        if (value <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Ceiling(value / 50m) * 50m;
+    }
+
     public static bool TryApply(ref decimal? value, decimal factor, out bool skipped)
     {
         skipped = false;
@@ -11,11 +21,7 @@ public static class ServicePriceIncreaseHelper
             return false;
         }
 
-        var next = Math.Round(value.Value * factor, 2, MidpointRounding.AwayFromZero);
-        if (next < 0)
-        {
-            next = 0;
-        }
+        var next = RoundUpToNearest50(value.Value * factor);
 
         if (next == value.Value)
         {

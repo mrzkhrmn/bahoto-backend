@@ -8,6 +8,16 @@ namespace Bahoto.Application.Services;
 
 public class OilChangeService : IOilChangeService
 {
+    private static readonly HashSet<string> AllowedPaymentMethods = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Nakit",
+        "KK",
+        "C Iban",
+        "M Iban",
+        // Eski kayıt uyumu
+        "Kredi Kartı"
+    };
+
     private readonly IApplicationDbContext _db;
 
     public OilChangeService(IApplicationDbContext db)
@@ -66,6 +76,12 @@ public class OilChangeService : IOilChangeService
             return ApiResponse<OilChangeDto>.Fail("Price geçerli bir değer olmalıdır.");
         }
 
+        var paymentError = ValidatePayment(request.PaymentMethod, out var paymentMethod);
+        if (paymentError is not null)
+        {
+            return ApiResponse<OilChangeDto>.Fail(paymentError);
+        }
+
         var entity = new OilChange
         {
             Vehicle = request.Vehicle,
@@ -80,7 +96,9 @@ public class OilChangeService : IOilChangeService
             PolenFilter = request.PolenFilter,
             Note = request.Note,
             Employee = request.Employee,
-            Price = request.Price
+            Price = request.Price,
+            PaymentMethod = paymentMethod,
+            BankAccount = NormalizeOptional(request.BankAccount)
         };
 
         _db.OilChanges.Add(entity);
@@ -112,6 +130,12 @@ public class OilChangeService : IOilChangeService
             return ApiResponse<OilChangeDto>.Fail("Price geçerli bir değer olmalıdır.");
         }
 
+        var paymentError = ValidatePayment(request.PaymentMethod, out var paymentMethod);
+        if (paymentError is not null)
+        {
+            return ApiResponse<OilChangeDto>.Fail(paymentError);
+        }
+
         entity.Vehicle = request.Vehicle;
         entity.Plate = request.Plate;
         entity.Phone = request.Phone;
@@ -125,6 +149,8 @@ public class OilChangeService : IOilChangeService
         entity.Note = request.Note;
         entity.Employee = request.Employee;
         entity.Price = request.Price;
+        entity.PaymentMethod = paymentMethod;
+        entity.BankAccount = NormalizeOptional(request.BankAccount);
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -147,6 +173,47 @@ public class OilChangeService : IOilChangeService
         return ApiResponse.Ok("Kayıt silindi.");
     }
 
+    private static string? ValidatePayment(string? paymentMethod, out string? normalized)
+    {
+        normalized = null;
+        if (string.IsNullOrWhiteSpace(paymentMethod))
+        {
+            return null;
+        }
+
+        var trimmed = paymentMethod.Trim();
+        if (!AllowedPaymentMethods.Contains(trimmed))
+        {
+            return "Ödeme tipi Nakit, KK, C Iban veya M Iban olmalıdır.";
+        }
+
+        if (trimmed.Equals("Kredi Kartı", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.Equals("KK", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = "KK";
+        }
+        else if (trimmed.Equals("C Iban", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = "C Iban";
+        }
+        else if (trimmed.Equals("M Iban", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = "M Iban";
+        }
+        else
+        {
+            normalized = "Nakit";
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeOptional(string? value)
+    {
+        var trimmed = value?.Trim();
+        return string.IsNullOrEmpty(trimmed) ? null : trimmed;
+    }
+
     private static OilChangeDto Map(OilChange entity) => new()
     {
         Id = entity.Id,
@@ -163,6 +230,8 @@ public class OilChangeService : IOilChangeService
         Note = entity.Note,
         Employee = entity.Employee,
         Price = entity.Price,
+        PaymentMethod = entity.PaymentMethod,
+        BankAccount = entity.BankAccount,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };

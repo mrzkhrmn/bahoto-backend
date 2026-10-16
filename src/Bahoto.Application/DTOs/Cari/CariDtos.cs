@@ -3,7 +3,7 @@ namespace Bahoto.Application.DTOs.Cari;
 public class CariDto
 {
     public Guid Id { get; set; }
-    public Guid ProductId { get; set; }
+    public Guid CariItemId { get; set; }
     public string ProductBrand { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public int Quantity { get; set; }
@@ -17,7 +17,7 @@ public class CariDto
 
 public class CariProductGroupDto
 {
-    public Guid ProductId { get; set; }
+    public Guid CariItemId { get; set; }
     public string Brand { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string QuantityLabel { get; set; } = string.Empty;
@@ -29,7 +29,7 @@ public class CariProductGroupDto
 
 public class CreateCariRequest
 {
-    public Guid ProductId { get; set; }
+    public Guid CariItemId { get; set; }
     public int Quantity { get; set; }
     public string QuantityUnit { get; set; } = "Adet";
     public decimal IncomingAmount { get; set; }
@@ -49,7 +49,7 @@ public class CreateCariWithProductRequest
 public class UpdateCariRequest
 {
     public Guid Id { get; set; }
-    public Guid ProductId { get; set; }
+    public Guid CariItemId { get; set; }
     public int Quantity { get; set; }
     public string QuantityUnit { get; set; } = "Adet";
     public decimal IncomingAmount { get; set; }
@@ -64,6 +64,16 @@ public class GetCariRequest
 public class DeleteCariRequest
 {
     public Guid Id { get; set; }
+}
+
+public class DeleteCariItemRequest
+{
+    public Guid CariItemId { get; set; }
+}
+
+public class DeleteCariBrandRequest
+{
+    public string Brand { get; set; } = string.Empty;
 }
 
 public class ListCariRequest

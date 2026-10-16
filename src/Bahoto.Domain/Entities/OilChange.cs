@@ -17,4 +17,7 @@ public class OilChange : BaseEntity
     public string? Note { get; set; }
     public string? Employee { get; set; }
     public decimal? Price { get; set; }
+    /// <summary>Nakit, KK, C Iban veya M Iban</summary>
+    public string? PaymentMethod { get; set; }
+    public string? BankAccount { get; set; }
 }

@@ -24,7 +24,8 @@ public class ProductService : IProductService
         var pageSize = request.PageSize < 1 ? 20 : Math.Min(request.PageSize, 1000);
         var search = request.Search?.Trim();
 
-        var query = _db.Products.AsNoTracking().AsQueryable();
+        // Markasız (Cari) ürünler fiyat tablosuna dahil edilmez.
+        var query = PriceListQuery(_db.Products.AsNoTracking());
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -61,7 +62,7 @@ public class ProductService : IProductService
 
         var brandNames = pageBrands.Select(x => x.Brand).ToList();
 
-        var products = await _db.Products.AsNoTracking()
+        var products = await PriceListQuery(_db.Products.AsNoTracking())
             .Where(x => brandNames.Contains(x.Brand))
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
@@ -225,12 +226,6 @@ public class ProductService : IProductService
             return ApiResponse.Fail("Ürün bulunamadı.");
         }
 
-        var hasCari = await _db.Caris.AnyAsync(x => x.ProductId == request.Id, cancellationToken);
-        if (hasCari)
-        {
-            return ApiResponse.Fail("Bu ürüne bağlı cari kayıtları olduğu için silinemez.");
-        }
-
         var brand = entity.Brand;
         entity.DeletedAt = DateTime.UtcNow;
         entity.UpdatedAt = DateTime.UtcNow;
@@ -256,13 +251,6 @@ public class ProductService : IProductService
         if (products.Count == 0)
         {
             return ApiResponse.Fail("Marka bulunamadı.");
-        }
-
-        var productIds = products.Select(x => x.Id).ToList();
-        var hasCari = await _db.Caris.AnyAsync(x => productIds.Contains(x.ProductId), cancellationToken);
-        if (hasCari)
-        {
-            return ApiResponse.Fail("Bu markaya bağlı cari kayıtları olan ürünler olduğu için silinemez.");
         }
 
         var utcNow = DateTime.UtcNow;
@@ -295,7 +283,7 @@ public class ProductService : IProductService
         }
 
         var scope = (request.Scope ?? "all").Trim().ToLowerInvariant();
-        IQueryable<Product> query = _db.Products;
+        IQueryable<Product> query = PriceListQuery(_db.Products);
 
         switch (scope)
         {
@@ -344,11 +332,7 @@ public class ProductService : IProductService
                 continue;
             }
 
-            var next = Math.Round(product.Price.Value * factor, 2, MidpointRounding.AwayFromZero);
-            if (next < 0)
-            {
-                next = 0;
-            }
+            var next = ServicePriceIncreaseHelper.RoundUpToNearest50(product.Price.Value * factor);
 
             if (next == product.Price.Value)
             {
@@ -504,6 +488,12 @@ public class ProductService : IProductService
         brandOrder.DeletedAt = DateTime.UtcNow;
         brandOrder.UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Fiyat tablosu yalnızca markası olan ürünleri gösterir.
+    /// Markasız kayıtlar Cari tarafında tutulur, buraya yansımaz.
+    /// </summary>
+    private static IQueryable<Product> PriceListQuery(IQueryable<Product> query) => query;
 
     private static ProductDto Map(Product entity) => new()
     {

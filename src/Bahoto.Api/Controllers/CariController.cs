@@ -58,4 +58,18 @@ public class CariController : ControllerBase
         var result = await _cariService.DeleteAsync(request, cancellationToken);
         return result.Success ? Ok(result) : NotFound(result);
     }
+
+    [HttpPost("delete-item")]
+    public async Task<IActionResult> DeleteItem([FromBody] DeleteCariItemRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _cariService.DeleteItemAsync(request, cancellationToken);
+        return result.Success ? Ok(result) : NotFound(result);
+    }
+
+    [HttpPost("delete-brand")]
+    public async Task<IActionResult> DeleteBrand([FromBody] DeleteCariBrandRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _cariService.DeleteBrandAsync(request, cancellationToken);
+        return result.Success ? Ok(result) : NotFound(result);
+    }
 }

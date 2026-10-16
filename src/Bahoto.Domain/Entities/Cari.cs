@@ -4,8 +4,8 @@ namespace Bahoto.Domain.Entities;
 
 public class Cari : BaseEntity
 {
-    public Guid ProductId { get; set; }
-    public Product Product { get; set; } = null!;
+    public Guid CariItemId { get; set; }
+    public CariItem CariItem { get; set; } = null!;
     public int Quantity { get; set; }
     /// <summary>Adet veya Koli</summary>
     public string QuantityUnit { get; set; } = "Adet";

@@ -12,4 +12,6 @@ public interface ICariService
     Task<ApiResponse<CariProductGroupDto>> CreateWithProductAsync(CreateCariWithProductRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse<CariDto>> UpdateAsync(UpdateCariRequest request, CancellationToken cancellationToken = default);
     Task<ApiResponse> DeleteAsync(DeleteCariRequest request, CancellationToken cancellationToken = default);
+    Task<ApiResponse> DeleteItemAsync(DeleteCariItemRequest request, CancellationToken cancellationToken = default);
+    Task<ApiResponse> DeleteBrandAsync(DeleteCariBrandRequest request, CancellationToken cancellationToken = default);
 }

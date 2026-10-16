@@ -186,15 +186,31 @@ public class DryLubePriceService : IDryLubePriceService
                 return ApiResponse<ApplyDryLubePriceIncreaseResultDto>.Fail("Geçerli bir hizmet seçilmelidir.");
             }
         }
+        else if (scope == "brandmodel")
+        {
+            if (request.BrandModelId is null || request.BrandModelId == Guid.Empty)
+            {
+                return ApiResponse<ApplyDryLubePriceIncreaseResultDto>.Fail("Marka-Model seçilmelidir.");
+            }
+        }
         else if (scope != "all")
         {
             return ApiResponse<ApplyDryLubePriceIncreaseResultDto>.Fail("Geçersiz zam kapsamı.");
         }
 
-        var items = await _db.DryLubePrices.ToListAsync(cancellationToken);
+        var query = _db.DryLubePrices.AsQueryable();
+        if (scope == "brandmodel")
+        {
+            query = query.Where(x => x.Id == request.BrandModelId);
+        }
+
+        var items = await query.ToListAsync(cancellationToken);
         if (items.Count == 0)
         {
-            return ApiResponse<ApplyDryLubePriceIncreaseResultDto>.Fail("Güncellenecek kayıt bulunamadı.");
+            return ApiResponse<ApplyDryLubePriceIncreaseResultDto>.Fail(
+                scope == "brandmodel"
+                    ? "Seçilen Marka-Model bulunamadı."
+                    : "Güncellenecek kayıt bulunamadı.");
         }
 
         var factor = 1 + (request.Percent / 100m);
@@ -224,7 +240,7 @@ public class DryLubePriceService : IDryLubePriceService
 
             void ApplyService(string key, Action apply)
             {
-                if (scope != "all" && !string.Equals(serviceKey, key, StringComparison.OrdinalIgnoreCase))
+                if (scope == "service" && !string.Equals(serviceKey, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }

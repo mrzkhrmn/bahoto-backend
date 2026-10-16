@@ -14,8 +14,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<OilChange> OilChanges => Set<OilChange>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<KarmaProduct> KarmaProducts => Set<KarmaProduct>();
     public DbSet<BrandOrder> BrandOrders => Set<BrandOrder>();
     public DbSet<Cari> Caris => Set<Cari>();
+    public DbSet<CariItem> CariItems => Set<CariItem>();
     public DbSet<WashPrice> WashPrices => Set<WashPrice>();
     public DbSet<DryLubePrice> DryLubePrices => Set<DryLubePrice>();
     public DbSet<VehicleMaintenance> VehicleMaintenances => Set<VehicleMaintenance>();
@@ -51,12 +53,27 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.Note).HasMaxLength(2000);
             entity.Property(x => x.Employee).HasMaxLength(200);
             entity.Property(x => x.Price).HasPrecision(18, 2);
+            entity.Property(x => x.PaymentMethod).HasMaxLength(50);
+            entity.Property(x => x.BankAccount).HasMaxLength(200);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
 
         modelBuilder.Entity<Product>(entity =>
         {
             entity.ToTable("Products");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Price).HasPrecision(18, 2);
+            entity.HasIndex(x => new { x.Brand, x.Name })
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
+        modelBuilder.Entity<KarmaProduct>(entity =>
+        {
+            entity.ToTable("KarmaProducts");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
@@ -79,6 +96,18 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });
 
+        modelBuilder.Entity<CariItem>(entity =>
+        {
+            entity.ToTable("CariItems");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Brand).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.HasIndex(x => new { x.Brand, x.Name })
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasQueryFilter(x => x.DeletedAt == null);
+        });
+
         modelBuilder.Entity<Cari>(entity =>
         {
             entity.ToTable("Caris");
@@ -87,10 +116,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.IncomingAmount).HasPrecision(18, 2);
             entity.Property(x => x.PaidAmount).HasPrecision(18, 2);
             entity.Property(x => x.Balance).HasPrecision(18, 2);
-            entity.HasIndex(x => x.ProductId);
-            entity.HasOne(x => x.Product)
+            entity.HasIndex(x => x.CariItemId);
+            entity.HasOne(x => x.CariItem)
                 .WithMany()
-                .HasForeignKey(x => x.ProductId)
+                .HasForeignKey(x => x.CariItemId)
                 .OnDelete(DeleteBehavior.Restrict);
             entity.HasQueryFilter(x => x.DeletedAt == null);
         });

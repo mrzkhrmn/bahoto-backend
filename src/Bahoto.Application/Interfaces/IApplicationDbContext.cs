@@ -8,8 +8,10 @@ public interface IApplicationDbContext
     DbSet<User> Users { get; }
     DbSet<OilChange> OilChanges { get; }
     DbSet<Product> Products { get; }
+    DbSet<KarmaProduct> KarmaProducts { get; }
     DbSet<BrandOrder> BrandOrders { get; }
     DbSet<Cari> Caris { get; }
+    DbSet<CariItem> CariItems { get; }
     DbSet<WashPrice> WashPrices { get; }
     DbSet<DryLubePrice> DryLubePrices { get; }
     DbSet<VehicleMaintenance> VehicleMaintenances { get; }

@@ -70,9 +70,10 @@ public class ReorderWashPriceRequest
 
 public class ApplyWashPriceIncreaseRequest
 {
-    /// <summary>all | service</summary>
+    /// <summary>all | service | brandModel</summary>
     public string Scope { get; set; } = "all";
     public string? ServiceKey { get; set; }
+    public Guid? BrandModelId { get; set; }
     public decimal Percent { get; set; }
 }
 

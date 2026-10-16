@@ -191,15 +191,31 @@ public class WashPriceService : IWashPriceService
                 return ApiResponse<ApplyServicePriceIncreaseResultDto>.Fail("Geçerli bir hizmet seçilmelidir.");
             }
         }
+        else if (scope == "brandmodel")
+        {
+            if (request.BrandModelId is null || request.BrandModelId == Guid.Empty)
+            {
+                return ApiResponse<ApplyServicePriceIncreaseResultDto>.Fail("Marka-Model seçilmelidir.");
+            }
+        }
         else if (scope != "all")
         {
             return ApiResponse<ApplyServicePriceIncreaseResultDto>.Fail("Geçersiz zam kapsamı.");
         }
 
-        var items = await _db.WashPrices.ToListAsync(cancellationToken);
+        var query = _db.WashPrices.AsQueryable();
+        if (scope == "brandmodel")
+        {
+            query = query.Where(x => x.Id == request.BrandModelId);
+        }
+
+        var items = await query.ToListAsync(cancellationToken);
         if (items.Count == 0)
         {
-            return ApiResponse<ApplyServicePriceIncreaseResultDto>.Fail("Güncellenecek kayıt bulunamadı.");
+            return ApiResponse<ApplyServicePriceIncreaseResultDto>.Fail(
+                scope == "brandmodel"
+                    ? "Seçilen Marka-Model bulunamadı."
+                    : "Güncellenecek kayıt bulunamadı.");
         }
 
         var factor = 1 + (request.Percent / 100m);
@@ -229,7 +245,7 @@ public class WashPriceService : IWashPriceService
 
             void ApplyService(string key, Action apply)
             {
-                if (scope != "all" && !string.Equals(serviceKey, key, StringComparison.OrdinalIgnoreCase))
+                if (scope == "service" && !string.Equals(serviceKey, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
