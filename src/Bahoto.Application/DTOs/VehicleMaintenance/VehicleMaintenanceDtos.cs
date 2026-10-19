@@ -8,6 +8,7 @@ public class VehicleMaintenanceDto
     public string? EngineOil { get; set; }
     public string? AirFilter { get; set; }
     public string? OilFilter { get; set; }
+    public string? FuelFilter { get; set; }
     public string? PolenFilter { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -24,6 +25,7 @@ public class CreateVehicleMaintenanceRequest
     public string? EngineOil { get; set; }
     public string? AirFilter { get; set; }
     public string? OilFilter { get; set; }
+    public string? FuelFilter { get; set; }
     public string? PolenFilter { get; set; }
 }
 

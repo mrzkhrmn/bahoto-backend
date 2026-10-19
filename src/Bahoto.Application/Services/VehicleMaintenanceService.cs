@@ -55,6 +55,7 @@ public class VehicleMaintenanceService : IVehicleMaintenanceService
             EngineOil = Normalize(request.EngineOil),
             AirFilter = Normalize(request.AirFilter),
             OilFilter = Normalize(request.OilFilter),
+            FuelFilter = Normalize(request.FuelFilter),
             PolenFilter = Normalize(request.PolenFilter)
         };
 
@@ -93,6 +94,7 @@ public class VehicleMaintenanceService : IVehicleMaintenanceService
         entity.EngineOil = Normalize(request.EngineOil);
         entity.AirFilter = Normalize(request.AirFilter);
         entity.OilFilter = Normalize(request.OilFilter);
+        entity.FuelFilter = Normalize(request.FuelFilter);
         entity.PolenFilter = Normalize(request.PolenFilter);
         entity.UpdatedAt = DateTime.UtcNow;
 
@@ -133,6 +135,7 @@ public class VehicleMaintenanceService : IVehicleMaintenanceService
         EngineOil = entity.EngineOil,
         AirFilter = entity.AirFilter,
         OilFilter = entity.OilFilter,
+        FuelFilter = entity.FuelFilter,
         PolenFilter = entity.PolenFilter,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
