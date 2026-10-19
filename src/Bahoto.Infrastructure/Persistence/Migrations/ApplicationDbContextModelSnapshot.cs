@@ -465,6 +465,10 @@ namespace Bahoto.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("FuelFilter")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("OilFilter")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");

@@ -9,5 +9,6 @@ public class VehicleMaintenance : BaseEntity
     public string? EngineOil { get; set; }
     public string? AirFilter { get; set; }
     public string? OilFilter { get; set; }
+    public string? FuelFilter { get; set; }
     public string? PolenFilter { get; set; }
 }

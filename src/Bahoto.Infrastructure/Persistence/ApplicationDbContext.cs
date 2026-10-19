@@ -178,6 +178,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(x => x.EngineOil).HasMaxLength(200);
             entity.Property(x => x.AirFilter).HasMaxLength(200);
             entity.Property(x => x.OilFilter).HasMaxLength(200);
+            entity.Property(x => x.FuelFilter).HasMaxLength(200);
             entity.Property(x => x.PolenFilter).HasMaxLength(200);
             entity.HasIndex(x => x.BrandModel)
                 .IsUnique()
